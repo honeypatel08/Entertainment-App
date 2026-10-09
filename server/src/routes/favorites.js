@@ -12,7 +12,15 @@ router.get("/", async (req, res, next) => {
        FROM favorites WHERE user_id = $1 ORDER BY created_at DESC`,
       [req.user.id]
     );
-    res.json({ favorites: result.rows });
+    const favorites = result.rows.map((favorite) => ({
+      ...favorite,
+      id: Number(favorite.id),
+      vote_average: favorite.vote_average == null ? null : Number(favorite.vote_average),
+      ...(favorite.media_type === "tv"
+        ? { name: favorite.title, first_air_date: favorite.release_date }
+        : {}),
+    }));
+    res.json({ favorites });
   } catch (error) {
     next(error);
   }

@@ -34,24 +34,29 @@
 
 
 import "../css/Favorites.css";
-import { Link } from "react-router-dom";
 import { useMovieContext } from "../contexts/MovieContext";
-import { useAuth } from "../contexts/AuthContext";
 import MovieCard from "../components/MovieCard";
 import ShowCard from "../components/ShowCard";
 import { useState } from "react";
 
 function Favorites() {
-  const { favorites } = useMovieContext();
-  const { user } = useAuth();
+  const { favorites, favoritesLoading, favoritesError, reloadFavorites } = useMovieContext();
   const [filter, setFilter] = useState("all"); // all | movie | tv
 
-  if (!user) {
+  if (favoritesLoading) {
     return (
       <div className="favoriteEmpty">
-        <h2>Your favorites travel with you</h2>
-        <p>Sign in to save movies and shows to your personal collection.</p>
-        <Link className="primaryButton" to="/auth/login">Sign in</Link>
+        <h2>Loading your favorites…</h2>
+      </div>
+    );
+  }
+
+  if (favoritesError) {
+    return (
+      <div className="favoriteEmpty">
+        <h2>Favorites could not be loaded</h2>
+        <p>{favoritesError}</p>
+        <button className="primaryButton" onClick={reloadFavorites}>Try again</button>
       </div>
     );
   }

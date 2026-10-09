@@ -4,6 +4,7 @@ import { useMovieContext } from "../contexts/MovieContext";
 function ShowCard({ show }) {
   const { addToFavorites, removeToFavorites, isFavorites, openDetails } = useMovieContext();
   const favs = isFavorites(show.id, "tv");
+  const rating = Number(show.vote_average);
 
   async function onFavClick(e) {
     e.preventDefault();
@@ -23,7 +24,7 @@ function ShowCard({ show }) {
           src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
           alt={show.name}
         />
-        <div className="rating">⭐ {show.vote_average?.toFixed(1)}</div>
+        <div className="rating">⭐ {Number.isFinite(rating) ? rating.toFixed(1) : "N/A"}</div>
         <button className={`favoriteBtn ${favs ? "active" : ""}`} onClick={onFavClick}>
           ♥
         </button>

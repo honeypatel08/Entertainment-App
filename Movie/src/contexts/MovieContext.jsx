@@ -8,27 +8,46 @@ export const useMovieContext = () => useContext(MovieContext);
 
 export function MovieProvider({ children }) {
   const { user } = useAuth();
+  const userId = user?.id;
   const [favorites, setFavorites] = useState([]);
+  const [favoritesOwnerId, setFavoritesOwnerId] = useState(null);
+  const [favoritesError, setFavoritesError] = useState("");
   const [selectedMedia, setSelectedMedia] = useState(null);
 
   const loadFavorites = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     try {
       const data = await apiRequest("/api/favorites");
       setFavorites(data.favorites || []);
+      setFavoritesOwnerId(userId);
+      setFavoritesError("");
     } catch (error) {
       console.error(error);
+      setFavoritesOwnerId(userId);
+      setFavoritesError("We could not load your favorites. Please try again.");
     }
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
+
     let active = true;
     apiRequest("/api/favorites")
-      .then((data) => active && setFavorites(data.favorites || []))
-      .catch((error) => console.error(error));
+      .then((data) => {
+        if (!active) return;
+        setFavorites(data.favorites || []);
+        setFavoritesOwnerId(userId);
+        setFavoritesError("");
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!active) return;
+        setFavorites([]);
+        setFavoritesOwnerId(userId);
+        setFavoritesError("We could not load your favorites. Please try again.");
+      });
     return () => { active = false; };
-  }, [user]);
+  }, [userId]);
 
   async function addToFavorites(item, mediaType) {
     if (!user) throw new Error("Sign in to save favorites");
@@ -55,11 +74,19 @@ export function MovieProvider({ children }) {
   }
 
   const isFavorites = (id, mediaType) => favorites.some(
-    (favorite) => Number(favorite.id) === Number(id) && favorite.media_type === mediaType
+    (favorite) => String(favoritesOwnerId) === String(userId)
+      && Number(favorite.id) === Number(id)
+      && favorite.media_type === mediaType
   );
 
+  const favoritesBelongToUser = Boolean(userId)
+    && String(favoritesOwnerId) === String(userId);
+
   const value = {
-    favorites: user ? favorites : [],
+    favorites: favoritesBelongToUser ? favorites : [],
+    favoritesLoading: Boolean(userId) && !favoritesBelongToUser,
+    favoritesError: favoritesBelongToUser ? favoritesError : "",
+    reloadFavorites: loadFavorites,
     addToFavorites,
     removeToFavorites,
     isFavorites,
