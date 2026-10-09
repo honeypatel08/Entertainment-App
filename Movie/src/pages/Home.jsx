@@ -15,7 +15,7 @@ function Home() {
       try {
         const data = await getNowPlaying();
         setMovies(data);
-      } catch (err) {
+      } catch {
         setError("Failed to load movies.");
       } finally {
         setLoading(false);

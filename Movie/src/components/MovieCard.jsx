@@ -3,17 +3,22 @@ import { useMovieContext } from "../contexts/MovieContext";
 // src/components/MovieCard.jsx
 
 function MovieCard({ movie }) {
-  const {addToFavorites, removeToFavorites, isFavorites} = useMovieContext()
+  const {addToFavorites, removeToFavorites, isFavorites, openDetails} = useMovieContext()
   const favs = isFavorites(movie.id, "movie")
   
-  function onFavClick(e) {
+  async function onFavClick(e) {
     e.preventDefault()
-    if (favs) removeToFavorites(movie.id,"movie")
-    else addToFavorites(movie,"movie")
+    e.stopPropagation()
+    try {
+      if (favs) await removeToFavorites(movie.id,"movie")
+      else await addToFavorites(movie,"movie")
+    } catch (error) {
+      alert(error.message)
+    }
   }
 
   return (
-    <div className="movieCard">
+    <article className="movieCard" onClick={() => openDetails(movie, "movie")} tabIndex="0">
       <div className="moviePoster">
         <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt ={movie.title}/>
         <div className="rating">
@@ -32,7 +37,7 @@ function MovieCard({ movie }) {
           : "N/A"}
         </p>
       </div>
-    </div>
+    </article>
   );
 }
 

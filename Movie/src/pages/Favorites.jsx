@@ -33,15 +33,28 @@
 // export default favorite
 
 
-import "../css/favorites.css";
+import "../css/Favorites.css";
+import { Link } from "react-router-dom";
 import { useMovieContext } from "../contexts/MovieContext";
+import { useAuth } from "../contexts/AuthContext";
 import MovieCard from "../components/MovieCard";
 import ShowCard from "../components/ShowCard";
 import { useState } from "react";
 
 function Favorites() {
   const { favorites } = useMovieContext();
+  const { user } = useAuth();
   const [filter, setFilter] = useState("all"); // all | movie | tv
+
+  if (!user) {
+    return (
+      <div className="favoriteEmpty">
+        <h2>Your favorites travel with you</h2>
+        <p>Sign in to save movies and shows to your personal collection.</p>
+        <Link className="primaryButton" to="/auth/login">Sign in</Link>
+      </div>
+    );
+  }
 
   if (!favorites || favorites.length === 0) {
     return (

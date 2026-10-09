@@ -1,75 +1,72 @@
-// provide global state and some hellper func use in multip place in the project 
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { apiRequest } from "../services/client";
+import { useAuth } from "./AuthContext";
 
-import { createContext, useState, useContext, useEffect } from "react";
+const MovieContext = createContext(null);
+export const useMovieContext = () => useContext(MovieContext);
 
-const MovieContext = createContext()
+export function MovieProvider({ children }) {
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState([]);
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
-export const useMovieContext = () => useContext(MovieContext)
-
-// anywhwere in the werbapplication can access the state 
-/*
-    children -> reserved prop. 
-    you write conmponet and childeren is anything thst inside of the component thst rendered
-*/
-export const MovieProvider = ({children}) => {
-    const [favorites, setFavorites] = useState([])
-
-    // local storage == allow us to store values directly within browser 
-    useEffect(() => {
-        const storedFav = localStorage.getItem("favorites")
-
-        // list in json string convert into JS obejct and save/set as fav 
-        if(storedFav) setFavorites(JSON.parse(storedFav)) 
-    }, [])
-
-    useEffect(() => {
-        localStorage.setItem('favorites', JSON.stringify(favorites))
-    }, [favorites])
-
-    // const addToFavorites = (movie) => {
-    //     // all and new 
-    //     setFavorites(prev => [...prev, movie])  
-    // }
-
-    const addToFavorites = (item, mediaType) => {
-        setFavorites((prev) => {
-        const exists = prev.some(
-            (fav) => fav.id === item.id && fav.media_type === mediaType
-        );
-        if (exists) return prev;
-        return [...prev, { ...item, media_type: mediaType }];
-        });
-    };
-
-    // const removeToFavorites = (movieId) => {
-    //     // filler out the movie that i matches 
-    //     setFavorites(prev => prev.filter(movie => movie.id !== movieId))  
-    // }
-
-    const removeToFavorites = (id, mediaType) => {
-        setFavorites((prev) =>
-        prev.filter(
-            (fav) => !(fav.id === id && fav.media_type === mediaType)
-        )
-        );
-    };
-
-    //  const isFavorites = (movieId) => {
-    //     // filler out the movie that i matches 
-    //     return favorites.some(movie => movie.id === movieId) 
-    // }
-    const isFavorites = (id, mediaType) => {
-        return favorites.some( (fav) => fav.id === id && fav.media_type === mediaType);
-    };
-
-    const value = {
-        favorites,
-        addToFavorites,
-        removeToFavorites, 
-        isFavorites
+  const loadFavorites = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await apiRequest("/api/favorites");
+      setFavorites(data.favorites || []);
+    } catch (error) {
+      console.error(error);
     }
+  }, [user]);
 
-    return <MovieContext.Provider value={value}>
-        {children}
-    </MovieContext.Provider>
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    apiRequest("/api/favorites")
+      .then((data) => active && setFavorites(data.favorites || []))
+      .catch((error) => console.error(error));
+    return () => { active = false; };
+  }, [user]);
+
+  async function addToFavorites(item, mediaType) {
+    if (!user) throw new Error("Sign in to save favorites");
+    await apiRequest("/api/favorites", {
+      method: "POST",
+      body: JSON.stringify({
+        externalId: item.id,
+        mediaType,
+        title: item.title || item.name,
+        posterPath: item.poster_path,
+        voteAverage: item.vote_average,
+        releaseDate: item.release_date || item.first_air_date,
+      }),
+    });
+    await loadFavorites();
+  }
+
+  async function removeToFavorites(id, mediaType) {
+    if (!user) throw new Error("Sign in to manage favorites");
+    await apiRequest(`/api/favorites/${mediaType}/${id}`, { method: "DELETE" });
+    setFavorites((current) => current.filter(
+      (favorite) => !(Number(favorite.id) === Number(id) && favorite.media_type === mediaType)
+    ));
+  }
+
+  const isFavorites = (id, mediaType) => favorites.some(
+    (favorite) => Number(favorite.id) === Number(id) && favorite.media_type === mediaType
+  );
+
+  const value = {
+    favorites: user ? favorites : [],
+    addToFavorites,
+    removeToFavorites,
+    isFavorites,
+    selectedMedia,
+    openDetails: (item, mediaType) => setSelectedMedia({ id: item.id, mediaType }),
+    closeDetails: () => setSelectedMedia(null),
+  };
+
+  return <MovieContext.Provider value={value}>{children}</MovieContext.Provider>;
 }

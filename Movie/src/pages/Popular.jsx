@@ -75,29 +75,9 @@ function Popular(){
             </form>
             {error && <div className="error-message">{error}</div>}
 
-                {loading ? (
-                    <div className="loading">Loading...</div>
-                ) : (
-                    <div className="movieInGrid">
-                    {movies.map((movie) => (
-                        <MovieCard movie={movie} key={movie.id} />
-                    ))}
-                    </div>
-                )}
-                {error && <div className="error-message"> {error}</div>}
                 {loading ? <div className="loading"> Loading... </div> :
                 <div className="movieInGrid">
-                    {movies.map((movie) => 
-                        //.map() lets you loop through the array and 
-                        // create one MovieCard per movie
-                        // key helps React identify each MovieCard uniquely.
-                        // can change to starts with end with 
-                        // api will be used: movie.title.toLowerCase().includes(searchQuerry.toLowerCase()) && 
-                        (
-                        movie.title.toLowerCase().includes(searchQuerry.toLowerCase()) && 
-                        <MovieCard movie={movie} key={movie.id}/>
-                            )
-                        )}
+                    {movies.map((movie) => <MovieCard movie={movie} key={movie.id}/>) }
                 </div>
             } 
         </div>

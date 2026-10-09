@@ -2,17 +2,22 @@ import "../css/MovieCard.css";
 import { useMovieContext } from "../contexts/MovieContext";
 
 function ShowCard({ show }) {
-  const { addToFavorites, removeToFavorites, isFavorites } = useMovieContext();
+  const { addToFavorites, removeToFavorites, isFavorites, openDetails } = useMovieContext();
   const favs = isFavorites(show.id, "tv");
 
-  function onFavClick(e) {
+  async function onFavClick(e) {
     e.preventDefault();
-    if (favs) removeToFavorites(show.id, "tv");
-    else addToFavorites(show, "tv");
+    e.stopPropagation();
+    try {
+      if (favs) await removeToFavorites(show.id, "tv");
+      else await addToFavorites(show, "tv");
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   return (
-    <div className="movieCard">
+    <article className="movieCard" onClick={() => openDetails(show, "tv")} tabIndex="0">
       <div className="moviePoster">
         <img
           src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
@@ -32,7 +37,7 @@ function ShowCard({ show }) {
             : "N/A"}
         </p>
       </div>
-    </div>
+    </article>
   );
 }
 

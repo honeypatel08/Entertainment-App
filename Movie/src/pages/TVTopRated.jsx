@@ -1,6 +1,6 @@
 import TVList from '../components/TVList';
-import { getPopularTV } from "../services/TVapi";
+import { getTopRatedTV } from "../services/TVapi";
 
 export default function TVPopular() {
-  return <TVList title="Popular TV Shows" fetchData={getPopularTV} />;
+  return <TVList title="Top Rated TV Shows" fetchData={getTopRatedTV} />;
 }

@@ -58,16 +58,6 @@ function Upcoming(){
                 <button type="submit" className="searchBtn">Search</button>
             </form>
             {error && <div className="error-message">{error}</div>}
-                {loading ? (
-                    <div className="loading">Loading...</div>
-                ) : (
-                    <div className="movieInGrid">
-                    {movies.map((movie) => (
-                        <MovieCard movie={movie} key={movie.id} />
-                    ))}
-                    </div>
-                )}
-                {error && <div className="error-message"> {error}</div>}
                 {loading ? <div className="loading"> Loading... </div> :
                 <div className="movieInGrid">
                     {movies.map((movie) => ( <MovieCard movie={movie} key={movie.id}/> ))}
