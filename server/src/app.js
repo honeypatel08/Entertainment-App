@@ -19,7 +19,10 @@ app.use("/api/movies", require("./routes/movies"));
 
 app.use((error, _req, res, _next) => {
   console.error(error);
-  res.status(error.status || 500).json({ error: error.status ? error.message : "Server error" });
+  const status = Number(error.status);
+  res.status(Number.isInteger(status) && status >= 400 && status < 600 ? status : 500).json({
+    error: typeof error.message === "string" && status ? error.message : "Server error",
+  });
 });
 
 module.exports = app;
