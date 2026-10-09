@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../db/pool");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -42,6 +43,19 @@ router.post("/login", async (req, res, next) => {
     const publicUser = { id: user.id, name: user.name, email: user.email };
     const token = jwt.sign(publicUser, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.json({ token, user: publicUser });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/me", requireAuth, async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, name, email FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    if (!result.rows[0]) return res.status(401).json({ error: "User no longer exists" });
+    res.json({ user: result.rows[0] });
   } catch (error) {
     next(error);
   }

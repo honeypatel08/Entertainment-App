@@ -7,6 +7,7 @@ import {MovieProvider} from "./contexts/MovieContext"
 import {AuthProvider} from "./contexts/AuthContext"
 import MediaDetails from './components/MediaDetails'
 import Auth from './pages/Auth'
+import ProtectedRoute from './components/ProtectedRoute'
 import Popular from './pages/Popular'
 import TopRate from './pages/TopRate'
 import Upcoming from './pages/Upcoming'
@@ -26,17 +27,18 @@ function App(){
         <NavBar />
         <main className='MainContent'>
           <Routes>
-            <Route path='*' element ={<Home />} />
-            <Route path='/movies/popular' element ={<Popular />} />
-            <Route path='/movies/top-rated' element ={<TopRate />} />
-            <Route path='/movies/upcoming' element ={<Upcoming />} />
-            <Route path='/favorites' element ={<Favorites />} />
-
-            <Route path="/tv-show/popular" element={<TVPopular />} />
-            <Route path="/tv-show/top-rated" element={<TVTopRated />} />
-            <Route path="/tv-show/airing-today" element={<TVAiringToday />} />
-            <Route path="/tv-show/on-tv" element={<TVOnTV />} />
             <Route path="/auth/:mode" element={<Auth />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path='*' element ={<Home />} />
+              <Route path='/movies/popular' element ={<Popular />} />
+              <Route path='/movies/top-rated' element ={<TopRate />} />
+              <Route path='/movies/upcoming' element ={<Upcoming />} />
+              <Route path='/favorites' element ={<Favorites />} />
+              <Route path="/tv-show/popular" element={<TVPopular />} />
+              <Route path="/tv-show/top-rated" element={<TVTopRated />} />
+              <Route path="/tv-show/airing-today" element={<TVAiringToday />} />
+              <Route path="/tv-show/on-tv" element={<TVOnTV />} />
+            </Route>
           </Routes>
         </main>
         <MediaDetails />

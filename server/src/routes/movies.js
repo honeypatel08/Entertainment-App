@@ -3,8 +3,10 @@ const crypto = require("crypto");
 const pool = require("../db/pool");
 const tmdb = require("../services/tmdb");
 const { PROMPT_VERSION, summarizeMedia } = require("../services/gemini");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+router.use(requireAuth);
 
 router.get("/discover/:mediaType/:category", async (req, res, next) => {
   try {
